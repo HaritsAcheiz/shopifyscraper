@@ -27,8 +27,10 @@ class shopyfyScraper:
 
 if __name__ == '__main__':
     scraper = shopyfyScraper()
-    urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,20)]
+    urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,3)]
     htmls = [scraper.fetch(url) for url in urls]
-    detail_urls = [scraper.parser(html) for html in htmls]
+    detail_urls = []
+    for html in htmls:
+        detail_urls.extend(scraper.parser(html))
     print(len(detail_urls))
 
