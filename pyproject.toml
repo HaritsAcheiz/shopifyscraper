@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "shopifyscraper"
+version = "0.1.0"
+description = ""
+authors = ["harits"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+httpx = "^0.23.3"
+selectolax = "^0.3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
