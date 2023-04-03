@@ -4,64 +4,13 @@ from selectolax.parser import HTMLParser
 import json
 import csv
 import os
-
-@dataclass
-class Product:
-    Handle:str
-    Title:str
-    Body_HTML:str
-    Vendor: str
-    Product_Category: str
-    Type: str
-    Tags: str
-    Published: str
-    Option1_Name: str
-    Option1_Value: str
-    Option2_Name: str
-    Option2_Value: str
-    Option3_Name: str
-    Option3_Value: str
-    Variant_SKU: str
-    Variant_Grams: str
-    Variant_Inventory_Tracker: str
-    Variant_Inventory_Qty: str
-    Variant_Inventory_Policy: str
-    Variant_Fulfillment_Service: str
-    Variant_Price: str
-    Variant_Compare_At_Price: str
-    Variant_Requires_Shipping: str
-    Variant_Taxable: str
-    Variant_Barcode: str
-    Image_Src: str
-    Image_Position: str
-    Image_Alt_Text: str
-    Gift_Card: str
-    SEO_Title: str
-    SEO_Description: str
-    Google_Shopping_Google_Product_Category: str
-    Google_Shopping_Gender: str
-    Google_Shopping_Age_Group: str
-    Google_Shopping_MPN:str
-    Google_Shopping_AdWords_Grouping: str
-    Google_Shopping_AdWords_Labels: str
-    Google_Shopping_Condition: str
-    Google_Shopping_Custom_Product: str
-    Google_Shopping_Custom_Label_0 : str
-    Google_Shopping_Custom_Label_1: str
-    Google_Shopping_Custom_Label_2: str
-    Google_Shopping_Custom_Label_3: str
-    Google_Shopping_Custom_Label_4: str
-    Variant_Image: str
-    Variant_Weight_Unit: str
-    Variant_Tax_Code: str
-    Cost_per_item: str
-    Price_International: str
-    Compare_At_Price_International: str
-    Status: str
+from typing import List
 
 @dataclass
 class shopyfyScraper:
-    base_url: str = 'https://www.80stees.com'
+    base_url: str
+    category: List[str]
+
     def fetch(self, url):
         client = Client()
         response = client.get(url)
@@ -79,24 +28,42 @@ class shopyfyScraper:
 
     def detail_parser(self, html):
         tree = HTMLParser(html)
+        item = None
         try:
-            name = tree.css_first('html > body > div:nth-child(7) > div:nth-child(2) > main > div:nth-child(9) > section > div > h1').text()
-        except:
-            name = ''
-        try:
+            title = tree.css_first('html > body > div:nth-child(7) > div:nth-child(2) > main > div:nth-child(9) > section > div > h1').text().strip()
+            handle = title.lower().replace(' ','-')
             sku = tree.css_first('html > body > div:nth-child(7) > div:nth-child(2) > main > div:nth-child(9) > section > div > p').attributes['content']
-        except:
-            sku = ''
-        try:
             img = tree.css_first('html > body > div:nth-child(7) > div:nth-child(2) > main > div:nth-child(9) > section > div > div:nth-child(4) > div:nth-child(1) > img').attributes['data-src']
-        except:
-            img = ''
-        try:
             price = tree.css_first('html > body > div:nth-child(7) > div:nth-child(2) > main > div:nth-child(9) > section > div > div:nth-child(4) > div:nth-child(2) > div:nth-child(1) > p:nth-child(10) > span:nth-child(3)').text()
-        except:
-            price = ''
-        item = Product(name=name, sku=sku, img=img, price=price)
-        return asdict(item)
+            description = f"<p>{tree.css_first('html > body > div:nth-of-type(5) > div:nth-of-type(2) > main > section > div > div').child.html}</p>"
+            vendor = '80stees'
+            product_type = tree.css_first('html > body > div:nth-of-type(5) > div:nth-of-type(2) > main > section:nth-of-type(4) > div > div > div:nth-of-type(1) > span:nth-of-type(1)').text().strip()
+            product_category = 'Apparel & Accessories > Clothing > Shirts'
+            for cat in self.category:
+                if product_type in cat:
+                    product_category = cat
+                    break
+            tags = "shirt, hoodies, sweaters, sweatshirts, t-shirts"
+            item = {
+                'Handle':handle, 'Title':title, 'Body(HTML)':description, 'Vendor':vendor, 'Product Category':product_category,
+                'Type':product_type, 'Tags':tags, 'Published':'', 'Option1 Name':'', 'Option1 Value':'', 'Option2 Name':'',
+                'Option2 Value':'', 'Option3 Name':'', 'Option3 Value':'', 'Variant SKU':sku, 'Variant Grams':'',
+                'Variant Inventory Tracker':'', 'Variant Inventory Qty':'', 'Variant Inventory Policy':'',
+                'Variant Fulfillment Service':'', 'Variant Price':'', 'Variant Compare At Price':'',
+                'Variant Requires Shipping':'', 'Variant Taxable':'', 'Variant Barcode':'', 'Image Src':img,
+                'Image Position':'', 'Image Alt Text':'', 'Gift Card':'', 'SEO Title':'', 'SEO Description':'',
+                'Google Shopping / Google Product Category':'', 'Google Shopping / Gender':'',
+                'Google Shopping / Age Group':'', 'Google Shopping / MPN':'',
+                'Google Shopping / AdWords Grouping':'', 'Google Shopping / AdWords Labels':'',
+                'Google Shopping / Condition':'', 'Google Shopping / Custom Product':'',
+                'Google Shopping / Custom Label 0':'', 'Google Shopping / Custom Label 1':'',
+                'Google Shopping / Custom Label 2':'', 'Google Shopping / Custom Label 3':'',
+                'Google Shopping / Custom Label 4':'', 'Variant Image':'', 'Variant Weight Unit':'',
+                'Variant Tax Code':'', 'Cost per item':'', 'Price / International':price, 'Compare At Price / International':'',
+                'Status':''}
+        except Exception as e:
+            print(e)
+        return item
 
     def to_csv(self, data, filename):
         file_exists = os.path.isfile(filename)
@@ -120,10 +87,18 @@ class shopyfyScraper:
             writer = csv.DictWriter(f, delimiter=',', lineterminator='\n', fieldnames=headers)
             if not file_exists:
                 writer.writeheader()
-            writer.writerow(data)
+            if data != None:
+                writer.writerow(data)
+            else:
+                pass
 
 if __name__ == '__main__':
-    scraper = shopyfyScraper()
+    base_url = 'https://www.80stees.com'
+    cat_file = open("category.txt", "r")
+    cat = cat_file.read()
+    cat_file.close()
+    cat_list = cat.split("\n")
+    scraper = shopyfyScraper(base_url=base_url, category=cat_list)
     urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,3)]
     htmls = [scraper.fetch(url) for url in urls]
     detail_urls = []
