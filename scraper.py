@@ -1,7 +1,6 @@
 from httpx import Client
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from selectolax.parser import HTMLParser
-import json
 import csv
 import os
 from typing import List
@@ -117,7 +116,7 @@ if __name__ == '__main__':
     cat_file.close()
     cat_list = cat.split("\n")
     scraper = shopyfyScraper(base_url=base_url, category=cat_list)
-    urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,2)]
+    urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,5)]
     htmls = [scraper.fetch(url) for url in urls]
     detail_urls = []
     for html in htmls:
