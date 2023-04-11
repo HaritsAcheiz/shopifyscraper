@@ -5,11 +5,14 @@ import csv
 import os
 from typing import List
 import re
+from google.cloud.sql.connector import Connector
+import sqlalchemy
 
 @dataclass
 class shopyfyScraper:
     base_url: str
     category: List[str]
+
 
     def fetch(self, url):
         client = Client()
@@ -109,6 +112,61 @@ class shopyfyScraper:
         except:
             pass
 
+    def to_db(self):
+        connector = Connector()
+        def getconn():
+            conn = connector.connect(
+                "river-nectar-383405:asia-southeast2:myteesdb",
+                "pg8000",
+                user="postgres",
+                password="admin",
+                db="myteesdb"
+            )
+            return conn
+
+        pool = sqlalchemy.create_engine(
+            "postgresql+pg8000://",
+            creator=getconn,
+        )
+
+        # connect to connection pool
+        with pool.connect() as db_conn:
+            # create ratings table in our sandwiches database
+            db_conn.execute(
+                sqlalchemy.text(
+                    "CREATE TABLE IF NOT EXISTS ratings "
+                    "( id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, "
+                    "origin VARCHAR(255) NOT NULL, rating FLOAT NOT NULL, "
+                    "PRIMARY KEY (id));"
+                )
+            )
+
+            # commit transaction (SQLAlchemy v2.X.X is commit as you go)
+            db_conn.commit()
+
+            # insert data into our ratings table
+            insert_stmt = sqlalchemy.text(
+                "INSERT INTO ratings (name, origin, rating) VALUES (:name, :origin, :rating)",
+            )
+
+            # insert entries into table
+            db_conn.execute(insert_stmt, parameters={"name": "HOTDOG", "origin": "Germany", "rating": 7.5})
+            db_conn.execute(insert_stmt, parameters={"name": "BÀNH MÌ", "origin": "Vietnam", "rating": 9.1})
+            db_conn.execute(insert_stmt, parameters={"name": "CROQUE MADAME", "origin": "France", "rating": 8.3})
+
+            # commit transactions
+            db_conn.commit()
+
+            # query and fetch ratings table
+            results = db_conn.execute(sqlalchemy.text("SELECT * FROM ratings")).fetchall()
+
+            # show results
+            for row in results:
+                print(row)
+
+            # cleanup connector object
+            connector.close()
+
 if __name__ == '__main__':
     base_url = 'https://www.80stees.com'
     cat_file = open("category.txt", "r")
@@ -116,13 +174,13 @@ if __name__ == '__main__':
     cat_file.close()
     cat_list = cat.split("\n")
     scraper = shopyfyScraper(base_url=base_url, category=cat_list)
-    urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,5)]
-    htmls = [scraper.fetch(url) for url in urls]
-    detail_urls = []
-    for html in htmls:
-        detail_urls.extend(scraper.parser(html))
-    detail_htmls = [scraper.fetch(url) for url in detail_urls]
-    data = [scraper.detail_parser(html) for html in detail_htmls]
-    scraper.to_csv(data,filename='result.csv')
+    # urls = [f'https://www.80stees.com/a/search?q=chrismas&page={str(page)}' for page in range(1,5)]
+    # htmls = [scraper.fetch(url) for url in urls]
+    # detail_urls = []
+    # for html in htmls:
+    #     detail_urls.extend(scraper.parser(html))
+    # detail_htmls = [scraper.fetch(url) for url in detail_urls]
+    # data = [scraper.detail_parser(html) for html in detail_htmls]
+    # scraper.to_csv(data,filename='result.csv')
     # data = scraper.detail_parser(detail_htmls[0])
 
