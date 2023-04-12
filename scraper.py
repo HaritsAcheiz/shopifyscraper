@@ -118,8 +118,8 @@ class shopyfyScraper:
             conn = connector.connect(
                 "river-nectar-383405:asia-southeast2:myteesdb",
                 "pg8000",
-                user="postgres",
-                password="admin",
+                user="harits",
+                password="mitsutani",
                 db="myteesdb"
             )
             return conn
@@ -135,9 +135,57 @@ class shopyfyScraper:
             db_conn.execute(
                 sqlalchemy.text(
                     "CREATE TABLE IF NOT EXISTS ratings "
-                    "( id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, "
-                    "origin VARCHAR(255) NOT NULL, rating FLOAT NOT NULL, "
-                    "PRIMARY KEY (id));"
+                    "(Handle VARCHAR(255) NOT NULL,"
+                    "Title VARCHAR(255) NOT NULL,"
+                    "Body(HTML) TEXT(255),"
+                    "Vendor VARCHAR(255) NOT NULL,"
+                    "Product Category VARCHAR(255) NOT NULL,"
+                    "Type VARCHAR(255) NOT NULL,"
+                    "Tags VARCHAR(255) NOT NULL,"
+                    "Published VARCHAR(255) NOT NULL,"
+                    "Option1 Name VARCHAR(255),"
+                    "Option1 Value VARCHAR(255),"
+                    "Option2 Name VARCHAR(255),"
+                    "Option2 Value VARCHAR(255),"
+                    "Option3 Name VARCHAR(255),"
+                    "Option3 Value VARCHAR(255),"
+                    "Variant SKU VARCHAR(255),"
+                    "Variant Grams VARCHAR(255),"
+                    "Variant Inventory Tracker VARCHAR(255),"
+                    "Variant Inventory Qty,"
+                    "Variant Inventory Policy,"
+                    "Variant Fulfillment Service,"
+                    "Variant Price,"
+                    "Variant Compare At Price,"
+                    "Variant Requires Shipping,"
+                    "Variant Taxable,"
+                    "Variant Barcode,"
+                    "Image Src,"
+                    "Image Position," 
+                    "Image Alt Text," 
+                    "Gift Card,"
+                    "SEO Title,"
+                    "SEO Description,"
+                    "Google Shopping / Google Product Category,"
+                    "Google Shopping / Gender,"
+                    "Google Shopping / Age Group,"
+                    "Google Shopping / MPN,"
+                    "Google Shopping / AdWords Grouping," 
+                    "Google Shopping / AdWords Labels,"
+                    "Google Shopping / Condition," 
+                    "Google Shopping / Custom Product,"
+                    "Google Shopping / Custom Label 0,"
+                    "Google Shopping / Custom Label 1,"
+                    "Google Shopping / Custom Label 2,"
+                    "Google Shopping / Custom Label 3,"
+                    "Google Shopping / Custom Label 4,"
+                    "Variant Image,"
+                    "Variant Weight Unit,"
+                    "Variant Tax Code,"
+                    "Cost per item,C"
+                    "Price / International,"
+                    "Compare At Price / International,"
+                    "Status VARCHAR(255) NOT NULL,);"
                 )
             )
 
@@ -183,4 +231,3 @@ if __name__ == '__main__':
     # data = [scraper.detail_parser(html) for html in detail_htmls]
     # scraper.to_csv(data,filename='result.csv')
     # data = scraper.detail_parser(detail_htmls[0])
-
