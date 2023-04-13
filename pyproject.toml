@@ -11,6 +11,8 @@ httpx = "^0.23.3"
 selectolax = "^0.3.12"
 sqlalchemy = "^2.0.9"
 cloud-sql-python-connector = {extras = ["pg8000"], version = "^1.2.1"}
+gcloud = "^0.18.3"
+google-cloud-storage = "^2.8.0"
 
 
 [build-system]
